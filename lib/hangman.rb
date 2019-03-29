@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require "yaml"
 
 class Game
   attr_reader :dictionary, :min_length, :max_length, :secret_word
@@ -19,7 +20,9 @@ class Game
     while guesses >= 0 do 
       show_game_state
       guess = solicit_guess
-      if @secret_word.include?(guess)
+      if guess == "save"
+        save_game
+      elsif @secret_word.include?(guess)
         reveal_letters(guess)
       else
         @used_letters << guess
@@ -37,6 +40,14 @@ class Game
   end
 
   private
+  def save_game
+    yaml = YAML::dump(self)
+    save_file = File.open("save.yaml", "w")
+    save_file.puts(yaml)
+    puts("Game saved.")
+    save_file.close
+  end
+
   def reveal_letters(guess)
     @secret_word.each_with_index do |secret_letter, i|
       hidden_word[i] = guess if guess == secret_letter
@@ -46,8 +57,8 @@ class Game
   def solicit_guess
     loop do
       print("Guess a letter: ")
-      letter = gets.downcase.chomp
-      return letter if valid_guess?(letter)
+      input = gets.downcase.chomp
+      return input if valid_guess?(input) || input == "save"
     end
   end
 
