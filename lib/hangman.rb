@@ -15,10 +15,9 @@ class Game
 
   public
   def play
+    show_welcome_message
     while guesses >= 0 do 
-      puts ("Guesses:\t#{guesses}")
-      puts("Word:\t\t#{@hidden_word.join}")
-      puts("Miss:\t\t#{@used_letters.join}")
+      show_game_state
       guess = solicit_guess
       if @secret_word.include?(guess)
         reveal_letters(guess)
@@ -27,10 +26,14 @@ class Game
         @guesses -= 1
       end
 
-      break if game_won?
+      if game_won?
+        puts("YOU WIN")
+        exit_game
+      end
     end
 
-    game_won? ? puts("YOU WIN") : puts("YOU LOSE")
+    game_over = true
+    show_game_state(game_over)
   end
 
   private
@@ -60,13 +63,19 @@ class Game
     @secret_word == @hidden_word
   end
 
+  def show_game_state(game_over = false)
+    game_over ? puts("YOU LOSE\nSecret:\t#{@secret_word.join}") : puts("Left:\t#{@guesses}")
+    puts("Word:\t#{@hidden_word.join}")
+    puts("Miss:\t#{@used_letters.join}")
+  end
+
+  def show_welcome_message
+    puts("Welcome to hangaman!")
+  end
+
 end
 
 dictionary = File.read("dictionary.txt").split
-my_secret_word = "hellow".split("")
-game = Game.new(dictionary)
-puts("Welcome to hangman!")
-game.play
+game = Game.new(dictionary, {secret_word: "robin".split("")})
 
-# puts("DEBUG - Word:\t#{game.secret_word}")
-# puts("DEBUG - Guess:\t#{game.guess}")
+game.play
