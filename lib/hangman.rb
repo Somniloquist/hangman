@@ -2,14 +2,11 @@
 require "yaml"
 
 class Game
-  attr_reader :dictionary, :min_length, :max_length, :secret_word
+  attr_reader :dictionary, :secret_word
   attr_accessor :guesses, :hidden_word, :used_letters
-  def initialize(dictionary, input = {})
-    @dictionary = dictionary
-    @min_length = input.fetch(:min_length, 1)
-    @max_length = input.fetch(:max_length, 12)
+  def initialize(input = {})
     @guesses = input.fetch(:guesses, 6)
-    @secret_word = input.fetch(:secret_word, set_secret_word)
+    @secret_word = input.fetch(:secret_word)
     @hidden_word = Array.new(secret_word.length) { "_" }
     @used_letters = []
   end
@@ -71,10 +68,6 @@ class Game
     string.length == 1 && string.match(/[a-z]/) ? true : false
   end
 
-  def set_secret_word
-    @dictionary.select { |word| word.length >= @min_length && word.length <= @max_length}.sample.downcase.split("")
-  end
-
   def game_won?
     @secret_word == @hidden_word
   end
@@ -93,7 +86,35 @@ class Game
 
 end
 
-dictionary = File.read("dictionary.txt").split
-game = Game.new(dictionary, {secret_word: "robin".split("")})
+def show_menu
+  puts("[1] START GAME")
+  puts("[2] LOAD GAME")
+end
 
+def get_menu_input
+  loop do 
+    print(">> ")
+    input = gets.chomp
+    return input if input == "1" || input == "2"
+  end
+end
+
+def get_secret_word(dictionary, min_length, max_length)
+  dictionary.select { |word| word.length >= min_length && word.length <= max_length}.sample.downcase.split("")
+end
+
+def setup
+  show_menu
+  input = get_menu_input
+  case input
+  when "1"
+    dictionary = File.read("dictionary.txt").split
+    secret_word = get_secret_word(dictionary, 1, 12)
+    Game.new({secret_word: secret_word})
+  when "2"
+    Game.load_game
+  end
+end
+
+game = setup
 game.play
