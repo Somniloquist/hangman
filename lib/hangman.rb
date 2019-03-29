@@ -39,6 +39,11 @@ class Game
     show_game_state(game_over)
   end
 
+  def self.load_game
+    save_file = File.open("save.yaml", "r")
+    game_data = YAML::load(save_file)
+  end
+
   private
   def save_game
     yaml = YAML::dump(self)
@@ -81,7 +86,9 @@ class Game
   end
 
   def show_welcome_message
-    puts("Welcome to hangaman!")
+    puts("=== Welcome to hangaman! ===")
+    puts("Type 'save' to save your save your progress.")
+    puts("============================")
   end
 
 end
