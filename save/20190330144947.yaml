@@ -1,32 +1,31 @@
 --- !ruby/object:Game
-guesses: 3
+guesses: 0
 secret_word:
-- d
+- v
 - i
+- r
+- u
 - l
 - e
-- t
-- t
-- a
 - n
 - t
-- i
-- s
-- m
+- l
+- y
 hidden_word:
 - _
+- i
+- r
+- u
 - _
-- l
 - e
-- t
-- t
-- a
-- _
-- t
+- n
 - _
 - _
 - _
 used_letters:
+- a
+- o
+- o
+- b
 - w
-- h
-- h
+- o

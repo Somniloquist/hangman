@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require "yaml"
 require "fileutils"
+SAVE_FILE_DIR = "./save/"
 
 class Game
   SAVE_FILE_DIR = "./save/"
@@ -21,6 +22,8 @@ class Game
       guess = solicit_guess
       if guess == "save"
         save_game
+      elsif guess == "quit"
+        return
       elsif @secret_word.include?(guess)
         reveal_letters(guess)
       else
@@ -38,21 +41,21 @@ class Game
     show_game_state(game_over)
   end
 
-  def self.load_game
-    save_file = File.open("save.yaml", "r")
-    game_data = YAML::load(save_file)
+  def self.load_game(file_name)
+    File.open(file_name, "r") { |data| YAML::load(data) }
   end
 
   private
   def save_game
     yaml = YAML::dump(self)
+    time = Time.now.strftime("%Y%m%d%H%M%S")
     FileUtils.mkdir(SAVE_FILE_DIR) unless File.directory?(SAVE_FILE_DIR)
-    File.open("#{SAVE_FILE_DIR}/save#{save_file_count}.yaml", "w") {|save_file| save_file.puts(yaml)}
+    File.open("#{SAVE_FILE_DIR}/#{time}.yaml", "w") {|save_file| save_file.puts(yaml)}
     puts("Game saved.")
   end
 
   def save_file_count
-    Dir.glob("#{SAVE_FILE_DIR}/save*.yaml").length
+    Dir.glob("#{SAVE_FILE_DIR}/*.yaml").length
   end
 
   def reveal_letters(guess)
@@ -65,7 +68,7 @@ class Game
     loop do
       print("Guess a letter: ")
       input = gets.downcase.chomp
-      return input if valid_guess?(input) || input == "save"
+      return input if valid_guess?(input) || input == "save" || input == "quit"
     end
   end
 
@@ -86,25 +89,24 @@ class Game
   def show_welcome_message
     puts("=== Welcome to hangaman! ===")
     puts("Type 'save' to save your save your progress.")
+    puts("Type 'quit' to exit the game.")
     puts("============================")
   end
 
 end
 
 def get_save_files
-  Dir.glob("saves/save*.yaml")
+  Dir.glob("#{SAVE_FILE_DIR}*.yaml").sort
 end
 
-def show_save_files
-  save_files = get_save_files
-  save_files.each_with_index do |file, i|
-    puts("[#{i}] - #{file}")
+def show_save_files(files)
+  files.each_with_index do |file, i|
+    puts("[#{i+1}] - #{File.basename(file, '.*')}")
   end
 end
 
 def show_menu
-  puts("[1] START GAME")
-  puts("[2] LOAD GAME")
+  puts("[1] START GAME\n[2] LOAD GAME")
 end
 
 def get_menu_input
@@ -116,16 +118,20 @@ def get_menu_input
 end
 
 def get_load_save_input
-  save_files = get_save_files.length
+  save_file_count = get_save_files.length
   loop do
     print(">> ")
-    input = get.chomp
-    return input if input.to_i <=save_files && input >= 1
+    input = gets.chomp.to_i
+    return input-1 if input <=save_file_count + 1 && input >= 1
   end
 end
 
 def get_secret_word(dictionary, min_length, max_length)
   dictionary.select { |word| word.length >= min_length && word.length <= max_length}.sample.downcase.split("")
+end
+
+def get_file_name_from_list(files, position)
+  files[position]
 end
 
 def setup
@@ -137,9 +143,12 @@ def setup
     secret_word = get_secret_word(dictionary, 1, 12)
     Game.new({secret_word: secret_word})
   when "2"
-    show_save_files
-
-    # Game.load_game
+    puts("Select a file to load")
+    save_file_list = get_save_files
+    show_save_files(save_file_list)
+    input = get_load_save_input
+    file_name = get_file_name_from_list(save_file_list, input)
+    Game.load_game(file_name)
   end
 end
 
