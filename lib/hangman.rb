@@ -106,7 +106,7 @@ def show_save_files(files)
 end
 
 def show_menu
-  puts("[1] START GAME\n[2] LOAD GAME")
+  puts("[1] START GAME\n[2] CONTINUE\n[3] LOAD GAME")
 end
 
 def get_menu_input
@@ -134,6 +134,10 @@ def get_file_name_from_list(files, position)
   files[position]
 end
 
+def get_last_file_name_from_list(files)
+  files[-1]
+end
+
 def setup
   show_menu
   input = get_menu_input
@@ -143,6 +147,9 @@ def setup
     secret_word = get_secret_word(dictionary, 1, 12)
     Game.new({secret_word: secret_word})
   when "2"
+    file_name = get_last_file_name_from_list(get_save_files)
+    Game.load_game(file_name)
+  when "3"
     puts("Select a file to load")
     save_file_list = get_save_files
     show_save_files(save_file_list)
